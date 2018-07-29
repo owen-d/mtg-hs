@@ -23,7 +23,6 @@ tags
 /_site/
 /.dir-locals.el
 /.git/
-/mtg.cabal
 /etc/scripts/stack-scripts.cabal
 .hspec-failures
 better-cache/
