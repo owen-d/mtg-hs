@@ -1,7 +1,13 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 
+
 module Card.Card
-  (
+  ( Color(..)
+  , Colors
+  , Cost(..)
+  , CardType(..)
+  , Rarity(..)
+  , Card(..)
   ) where
 
 
@@ -27,7 +33,7 @@ data Cost
     deriving (Show)
 
 data CardType
-  = Artifact (Maybe CardType)
+  = Artifact
   | Creature
   | Enchantment
   | Instant
