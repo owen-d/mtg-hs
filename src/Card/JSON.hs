@@ -79,3 +79,22 @@ tokens s =
     if ok s
     then (extract s):(tokens $ rest s)
     else []
+
+parseCard :: Value -> Parser Card
+parseCard (Object o) = do
+  id <- o .: "id"
+  name <- o .: "name"
+  text <- o .: "text"
+  flavor <- o .: "flavor"
+  artist <- o .: "artist"
+  number <- o .: "number"
+  power <- o .: "power"
+  toughness <- o .: "toughness"
+  loyalty <- o .: "id"
+  mulitverseId <- o .: "mulitverseId"
+  -- customs
+  manaCost <- o .: "manaCost"
+  convertedManaCost <- o .: "convertedManaCost"
+  colorIdentity <- o .: "colorIdentity"
+  cardType <- o .: "cardType"
+  rarity <- o .: "rarity"
