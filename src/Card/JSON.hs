@@ -1,23 +1,23 @@
+{-# LANGUAGE DeriveAnyClass    #-}
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DeriveAnyClass #-}
 
 module Card.JSON
   (
   ) where
 
-import Data.Aeson.Types
-import Card.Card
+import           Card.Card
+import           Data.Aeson.Types
 
-import qualified Data.Vector as V
+import qualified Data.Vector      as V
 
 parseColor :: Value -> Parser Color
 parseColor (String "White") = return White
-parseColor (String "Blue") = return Blue
+parseColor (String "Blue")  = return Blue
 parseColor (String "Black") = return Black
-parseColor (String "Red") = return Red
+parseColor (String "Red")   = return Red
 parseColor (String "Green") = return Green
-parseColor _ = fail "expected a Color"
+parseColor _                = fail "expected a Color"
 
 instance FromJSON Color where
   parseJSON = parseColor
@@ -26,27 +26,40 @@ instance FromJSON Color where
 --   parseJSON =
 --     withArray "array of Colors" $ \arr -> mapM parseColor (V.toList arr)
 
-
 parseCardType :: Value -> Parser CardType
-parseCardType (String "Artifact") = return Artifact
-parseCardType (String "Creature") = return Creature
-parseCardType (String "Enchantment") = return Enchantment
-parseCardType (String "Instant") = return Instant
-parseCardType (String "Land") = return Land
+parseCardType (String "Artifact")     = return Artifact
+parseCardType (String "Creature")     = return Creature
+parseCardType (String "Enchantment")  = return Enchantment
+parseCardType (String "Instant")      = return Instant
+parseCardType (String "Land")         = return Land
 parseCardType (String "PlanesWalker") = return PlanesWalker
-parseCardType _ = fail "expected a CardType"
+parseCardType _                       = fail "expected a CardType"
 
 instance FromJSON CardType where
   parseJSON = parseCardType
 
 parseRarity :: Value -> Parser Rarity
-parseRarity (String "Common") = return Common
+parseRarity (String "Common")   = return Common
 parseRarity (String "Uncommon") = return Uncommon
-parseRarity (String "Rare") = return Rare
-parseRarity (String "Mythic") = return Mythic
-parseRarity (String "Special") = return Special
-parseRarity (String "Basic") = return Basic
-parseRarity _ = fail "expected a Rarity"
+parseRarity (String "Rare")     = return Rare
+parseRarity (String "Mythic")   = return Mythic
+parseRarity (String "Special")  = return Special
+parseRarity (String "Basic")    = return Basic
+parseRarity _                   = fail "expected a Rarity"
 
 instance FromJSON Rarity where
   parseJSON = parseRarity
+
+-- parseCost :: Value -> Parser Cost
+-- parseCost (String s)
+-- parseCost _ = fail "Expected a Cost"
+
+tokens :: String -> String
+tokens s =
+  let extract = head . tail . (take 3)
+      rest = drop 3
+      ok = (>= 2) . length
+  in
+    if ok s
+    then (extract s):(tokens $ rest s)
+    else []
