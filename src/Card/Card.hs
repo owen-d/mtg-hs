@@ -23,10 +23,8 @@ type Colors = [Color]
 
 -- basically a linked list of different cost types
 data Cost
-  = Color
+  = One Color
   | Colorless Int
-  | Combined Cost
-             Cost
   | Split Color
           Color
   | X

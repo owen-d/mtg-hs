@@ -9,6 +9,7 @@ module Card.JSON
 import           Card.Card
 import           Data.Aeson.Types
 
+import qualified Data.Text        as T
 import qualified Data.Vector      as V
 
 parseColor :: Value -> Parser Color
@@ -50,9 +51,24 @@ parseRarity _                   = fail "expected a Rarity"
 instance FromJSON Rarity where
   parseJSON = parseRarity
 
--- parseCost :: Value -> Parser Cost
--- parseCost (String s)
--- parseCost _ = fail "Expected a Cost"
+parseCost :: Value -> Parser Cost
+parseCost (String s) =
+  case s of
+    "W" -> return $ One White
+    "B" -> return $ One Black
+    "U" -> return $ One Blue
+    "R" -> return $ One Red
+    "G" -> return $ One Green
+    "X" -> return X
+   -- Issue: only handles 1-9
+    n | elem n' ['1'..'9'] ->
+        return $ Colorless $ read [n']
+      where n' = T.head n
+    _ -> fail "Expected a Cost"
+parseCost _ = fail "Expected a Cost"
+
+instance FromJSON Cost where
+  parseJSON = parseCost
 
 tokens :: String -> String
 tokens s =
