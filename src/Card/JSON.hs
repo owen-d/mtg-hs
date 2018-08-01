@@ -7,8 +7,9 @@ module Card.JSON
 import           Card.Card
 import           Data.Aeson.Types
 
-import qualified Data.Text        as T
-import qualified Data.Vector      as V
+import qualified Data.HashMap.Strict as HM
+import qualified Data.Text           as T
+import qualified Data.Vector         as V
 
 parseColor :: Value -> Parser Color
 parseColor (String "White") = return White
@@ -72,11 +73,17 @@ tokens s =
        then (extract s) : (tokens $ rest s)
        else []
 
+parseTokens :: Object -> Parser Costs
+parseTokens o = case HM.lookup "manaCost" o of
+  Just (String v) -> parseJSON . String . T.pack . tokens . T.unpack $ v
+  Just _          -> fail "invalid manaCost type"
+  Nothing         -> fail "key manaCost not present"
+
 instance FromJSON Card where
   parseJSON = withObject "Card" $ \v -> Card
     <$> v .: "id"
     <*> v .: "name"
-    <*> v .: "manaCost"
+    <*> (parseTokens v)
     <*> v .: "convertedManaCost"
     <*> v .: "colorIdentity"
     <*> v .: "cardTypes"
