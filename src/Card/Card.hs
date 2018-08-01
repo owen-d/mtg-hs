@@ -5,7 +5,9 @@ module Card.Card
   ( Color(..)
   , Colors
   , Cost(..)
+  , Costs
   , CardType(..)
+  , CardTypes
   , Rarity(..)
   , Card(..)
   ) where
@@ -21,7 +23,6 @@ data Color
 
 type Colors = [Color]
 
--- basically a linked list of different cost types
 data Cost
   = One Color
   | Colorless Int
@@ -29,6 +30,8 @@ data Cost
           Color
   | X
     deriving (Show)
+
+type Costs = [Cost]
 
 data CardType
   = Artifact
@@ -38,6 +41,8 @@ data CardType
   | Land
   | PlanesWalker
   deriving (Show)
+
+type CardTypes = [CardType]
 
 data Rarity
   = Common
@@ -51,10 +56,10 @@ data Rarity
 data Card = Card
   { id :: String
   , name :: String
-  , manaCost :: Cost
+  , manaCost :: Costs
   , convertedManaCost :: Int
   , colorIdentity :: Colors
-  , cardType :: CardType
+  , cardTypes :: CardTypes
   , rarity :: Rarity
   , text :: String
   , flavor :: String

@@ -1,5 +1,3 @@
-{-# LANGUAGE DeriveAnyClass    #-}
-{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Card.JSON
@@ -22,10 +20,6 @@ parseColor _                = fail "expected a Color"
 
 instance FromJSON Color where
   parseJSON = parseColor
-
--- instance FromJSON [Color] where
---   parseJSON =
---     withArray "array of Colors" $ \arr -> mapM parseColor (V.toList arr)
 
 parseCardType :: Value -> Parser CardType
 parseCardType (String "Artifact")     = return Artifact
@@ -51,8 +45,8 @@ parseRarity _                   = fail "expected a Rarity"
 instance FromJSON Rarity where
   parseJSON = parseRarity
 
-parseCost :: Value -> Parser Cost
-parseCost (String s) =
+parseCost :: T.Text -> Parser Cost
+parseCost s =
   case s of
     "W" -> return $ One White
     "B" -> return $ One Black
@@ -65,36 +59,33 @@ parseCost (String s) =
         return $ Colorless $ read [n']
       where n' = T.head n
     _ -> fail "Expected a Cost"
-parseCost _ = fail "Expected a Cost"
 
 instance FromJSON Cost where
-  parseJSON = parseCost
+  parseJSON = withText "Cost" parseCost
 
 tokens :: String -> String
 tokens s =
   let extract = head . tail . (take 3)
       rest = drop 3
       ok = (>= 2) . length
-  in
-    if ok s
-    then (extract s):(tokens $ rest s)
-    else []
+  in if ok s
+       then (extract s) : (tokens $ rest s)
+       else []
 
-parseCard :: Value -> Parser Card
-parseCard (Object o) = do
-  id <- o .: "id"
-  name <- o .: "name"
-  text <- o .: "text"
-  flavor <- o .: "flavor"
-  artist <- o .: "artist"
-  number <- o .: "number"
-  power <- o .: "power"
-  toughness <- o .: "toughness"
-  loyalty <- o .: "id"
-  mulitverseId <- o .: "mulitverseId"
-  -- customs
-  manaCost <- o .: "manaCost"
-  convertedManaCost <- o .: "convertedManaCost"
-  colorIdentity <- o .: "colorIdentity"
-  cardType <- o .: "cardType"
-  rarity <- o .: "rarity"
+instance FromJSON Card where
+  parseJSON = withObject "Card" $ \v -> Card
+    <$> v .: "id"
+    <*> v .: "name"
+    <*> v .: "manaCost"
+    <*> v .: "convertedManaCost"
+    <*> v .: "colorIdentity"
+    <*> v .: "cardTypes"
+    <*> v .: "rarity"
+    <*> v .: "text"
+    <*> v .: "flavor"
+    <*> v .: "artist"
+    <*> v .: "number"
+    <*> v .: "power"
+    <*> v .: "toughtness"
+    <*> v .: "loyalty"
+    <*> v .: "multiverseId"
