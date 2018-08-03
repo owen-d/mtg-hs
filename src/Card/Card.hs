@@ -54,20 +54,20 @@ data Rarity
   deriving (Show)
 
 data Card = Card
-  { id :: String
-  , name :: String
-  , manaCost :: Costs
-  , convertedManaCost :: Int
+  { id            :: String
+  , name          :: String
+  , manaCost      :: Costs
+  -- , convertedManaCost :: Int
   , colorIdentity :: Colors
-  , cardTypes :: CardTypes
-  , rarity :: Rarity
-  , text :: String
-  , flavor :: String
-  , artist :: String
-  , number :: String
-  , power :: Int
-  , toughness :: Int
-  , loyalty :: Int
-  , multiverseId :: Int
+  -- , cardTypes :: CardTypes
+  , rarity        :: Rarity
+  , text          :: String
+  , flavor        :: Maybe String
+  , artist        :: String
+  , number        :: String
+  , power         :: Maybe Int
+  , toughness     :: Maybe Int
+  , loyalty       :: Maybe Int
+  , multiverseId  :: Int
   }
   deriving (Show)

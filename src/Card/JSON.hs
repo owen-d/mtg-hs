@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Card.JSON
-  (
+  ( module Card.JSON
   ) where
 
 import           Card.Card
@@ -9,15 +9,14 @@ import           Data.Aeson.Types
 
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Text           as T
-import qualified Data.Vector         as V
 
 parseColor :: Value -> Parser Color
-parseColor (String "White") = return White
-parseColor (String "Blue")  = return Blue
-parseColor (String "Black") = return Black
-parseColor (String "Red")   = return Red
-parseColor (String "Green") = return Green
-parseColor _                = fail "expected a Color"
+parseColor (String "W") = return White
+parseColor (String "U") = return Blue
+parseColor (String "B") = return Black
+parseColor (String "R") = return Red
+parseColor (String "G") = return Green
+parseColor _            = fail "expected a Color"
 
 instance FromJSON Color where
   parseJSON = parseColor
@@ -46,36 +45,38 @@ parseRarity _                   = fail "expected a Rarity"
 instance FromJSON Rarity where
   parseJSON = parseRarity
 
-parseCost :: T.Text -> Parser Cost
-parseCost s =
+-- Since string is itself a list, we wrap it in tagged union.
+-- Otherwise it wont register as [a] in parsing, but rather a
+data CostWrapper = CostWrapper Char
+  deriving (Show)
+
+parseCost :: CostWrapper -> Parser Cost
+parseCost (CostWrapper s) =
   case s of
-    "W" -> return $ One White
-    "B" -> return $ One Black
-    "U" -> return $ One Blue
-    "R" -> return $ One Red
-    "G" -> return $ One Green
-    "X" -> return X
+    'W' -> return $ One White
+    'B' -> return $ One Black
+    'U' -> return $ One Blue
+    'R' -> return $ One Red
+    'G' -> return $ One Green
+    'X' -> return X
    -- Issue: only handles 1-9
-    n | elem n' ['1'..'9'] ->
-        return $ Colorless $ read [n']
-      where n' = T.head n
+    n | elem n ['1'..'9'] ->
+        return $ Colorless $ read [n]
     _ -> fail "Expected a Cost"
 
-instance FromJSON Cost where
-  parseJSON = withText "Cost" parseCost
-
-tokens :: String -> String
+tokens :: String -> [CostWrapper]
 tokens s =
   let extract = head . tail . (take 3)
       rest = drop 3
       ok = (>= 2) . length
   in if ok s
-       then (extract s) : (tokens $ rest s)
+       then (CostWrapper . extract $ s) : (tokens $ rest s)
        else []
 
 parseTokens :: Object -> Parser Costs
 parseTokens o = case HM.lookup "manaCost" o of
-  Just (String v) -> parseJSON . String . T.pack . tokens . T.unpack $ v
+  Just (String v) ->
+    sequence . map parseCost $ tokens . T.unpack $ v
   Just _          -> fail "invalid manaCost type"
   Nothing         -> fail "key manaCost not present"
 
@@ -84,15 +85,15 @@ instance FromJSON Card where
     <$> v .: "id"
     <*> v .: "name"
     <*> (parseTokens v)
-    <*> v .: "convertedManaCost"
+    -- <*> v .: "convertedManaCost"
     <*> v .: "colorIdentity"
-    <*> v .: "cardTypes"
+    -- <*> v .: "cardTypes"
     <*> v .: "rarity"
     <*> v .: "text"
-    <*> v .: "flavor"
+    <*> v .:? "flavor"
     <*> v .: "artist"
     <*> v .: "number"
-    <*> v .: "power"
-    <*> v .: "toughtness"
-    <*> v .: "loyalty"
-    <*> v .: "multiverseId"
+    <*> v .:? "power"
+    <*> v .:? "toughtness"
+    <*> v .:? "loyalty"
+    <*> v .: "multiverseid"
