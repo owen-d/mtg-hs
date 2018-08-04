@@ -9,14 +9,23 @@ import qualified Data.Aeson           as A
 import qualified Data.ByteString.Lazy as B
 
 jsonFile :: FilePath
-jsonFile = "/tmp/card.json"
+jsonFile = "/tmp/cards.json"
 
 getJSON :: IO B.ByteString
 getJSON = B.readFile jsonFile
 
-stuff :: IO ()
-stuff = do
-  d <- (A.eitherDecode <$> getJSON) :: IO (Either String Card)
-  case d of
+a :: IO ()
+a = ((A.eitherDecode <$> getJSON) :: IO (Either String [Card])) >>= (log' 5)
+-- a = do
+--   cards <- (A.eitherDecode <$> getJSON) :: IO (Either String [Card])
+--   case cards of
+--     Left err -> putStrLn err
+--     Right cards' ->
+--       let wanted = take 5 cards'
+--       in mapM_ print wanted
+
+log' :: Show a => Int ->  Either String [a] -> IO ()
+log' n a =
+  case a of
     Left err -> putStrLn err
-    Right ps -> print ps
+    Right a' -> mapM_ print $ take n a'
