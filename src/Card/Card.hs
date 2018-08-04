@@ -38,6 +38,7 @@ data CardType
   | Creature
   | Enchantment
   | Instant
+  | Sorcery
   | Land
   | PlanesWalker
   deriving (Show)
@@ -59,9 +60,9 @@ data Card = Card
   , manaCost      :: Costs
   -- , convertedManaCost :: Int
   , colorIdentity :: Colors
-  -- , cardTypes :: CardTypes
+  , cardTypes     :: CardTypes
   , rarity        :: Rarity
-  , text          :: String
+  , text          :: Maybe String
   , flavor        :: Maybe String
   , artist        :: String
   , number        :: String

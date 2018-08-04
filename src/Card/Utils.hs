@@ -15,7 +15,7 @@ getJSON :: IO B.ByteString
 getJSON = B.readFile jsonFile
 
 a :: IO ()
-a = ((A.eitherDecode <$> getJSON) :: IO (Either String [Card])) >>= (log' 5)
+a = ((A.eitherDecode <$> getJSON) :: IO (Either String [Card])) >>= (log' 2)
 -- a = do
 --   cards <- (A.eitherDecode <$> getJSON) :: IO (Either String [Card])
 --   case cards of
