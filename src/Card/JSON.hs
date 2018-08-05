@@ -40,7 +40,7 @@ parseRarity (String "Uncommon")    = return Uncommon
 parseRarity (String "Rare")        = return Rare
 parseRarity (String "Mythic Rare") = return Mythic
 parseRarity (String "Special")     = return Special
-parseRarity (String "Basic")       = return Basic
+parseRarity (String "Basic Land")  = return Basic
 parseRarity _                      = fail "expected a Rarity"
 
 instance FromJSON Rarity where
@@ -79,16 +79,17 @@ parseTokens o = case HM.lookup "manaCost" o of
   Just (String v) ->
     sequence . map parseCost $ tokens . T.unpack $ v
   Just _          -> fail "invalid manaCost type"
-  Nothing         -> fail "key manaCost not present"
+  Nothing         -> return []
 
-parseIntToString :: Value -> Parser Int
-parseIntToString (String s) =
+parseCombatStat :: Value -> Parser CombatStat
+parseCombatStat (String "*") = return Wildcard
+parseCombatStat (String s) =
   let
     converted = reads (T.unpack s) :: [(Int, String)]
   in case converted of
-    (n,_):_ -> return n
+    (n,_):_ -> (return . Stat) n
     _       -> fail "failure to parse"
-parseIntToString _ = fail "Invalid type for parsing"
+parseCombatStat _ = fail "Invalid type for parsing"
 
 instance FromJSON Card where
   parseJSON = withObject "Card" $ \v -> Card
@@ -96,7 +97,7 @@ instance FromJSON Card where
     <*> v .: "name"
     <*> (parseTokens v)
     -- <*> v .: "convertedManaCost"
-    <*> v .: "colorIdentity"
+    <*> parseColorIdentity v
     <*> v .: "types"
     <*> v .: "rarity"
     <*> v .:? "text"
@@ -109,6 +110,13 @@ instance FromJSON Card where
     <*> v .: "multiverseid"
     where
       parsePower o =
-        explicitParseFieldMaybe parseIntToString o "power"
+        explicitParseFieldMaybe parseCombatStat o "power"
       parseToughness o =
-        explicitParseFieldMaybe parseIntToString o "toughness"
+        explicitParseFieldMaybe parseCombatStat o "toughness"
+      -- ColorIdentites can be missing, but we don't intend to type them as Maybe [Cost]
+      -- Rather, we'll use []
+      parseColorIdentity o =
+        case HM.lookup "colorIdentity" o of
+          Just (Array costs) -> (parseJSON . Array) costs
+          Just _             -> fail "invalid colorIdentity type"
+          Nothing            -> return []

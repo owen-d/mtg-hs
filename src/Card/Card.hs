@@ -10,6 +10,7 @@ module Card.Card
   , CardTypes
   , Rarity(..)
   , Card(..)
+  , CombatStat(..)
   ) where
 
 
@@ -54,6 +55,11 @@ data Rarity
   | Basic
   deriving (Show)
 
+data CombatStat
+  = Stat Int
+  | Wildcard
+  deriving (Show)
+
 data Card = Card
   { id            :: String
   , name          :: String
@@ -66,8 +72,8 @@ data Card = Card
   , flavor        :: Maybe String
   , artist        :: String
   , number        :: String
-  , power         :: Maybe Int
-  , toughness     :: Maybe Int
+  , power         :: Maybe CombatStat
+  , toughness     :: Maybe CombatStat
   , loyalty       :: Maybe Int
   , multiverseId  :: Int
   }
